@@ -94,42 +94,6 @@ tests/
 - **MongoDB Memory Server**: In-memory MongoDB for isolated testing
 - **bcrypt**: Password hashing for user authentication tests
 
-## 📊 Test Coverage
-
-The test suite covers:
-
-### Models (100% coverage target)
-- ✅ User schema validation
-- ✅ Publication schema validation  
-- ✅ Follow relationship validation
-- ✅ Default values and required fields
-- ✅ Model relationships and population
-
-### Controllers (95%+ coverage target)
-- ✅ User registration and validation
-- ✅ User login and authentication
-- ✅ User profile management
-- ✅ User list with pagination
-- ✅ Publication CRUD operations
-- ✅ Publication file upload handling
-- ✅ Follow/unfollow operations
-- ✅ Error handling and edge cases
-
-### Services (100% coverage target)
-- ✅ JWT token creation and validation
-- ✅ Follow service user relationships
-- ✅ Error handling in services
-
-### Middlewares (100% coverage target)
-- ✅ Authentication middleware
-- ✅ Token validation and expiration
-- ✅ Authorization header handling
-
-### Integration (90%+ coverage target)
-- ✅ Complete user workflows
-- ✅ API security and CORS
-- ✅ Error handling across endpoints
-- ✅ Request validation
 
 ## 🔧 Configuration
 

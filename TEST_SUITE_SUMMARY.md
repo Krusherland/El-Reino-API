@@ -2,7 +2,7 @@
 
 ## 🎉 Test Suite Summary
 
-I have successfully created a comprehensive unit test suite for the **El-Reino API** project with the following results:
+Successfully created a comprehensive unit test suite for the **El-Reino API** project with the following results:
 
 ### 📊 Test Results
 - **✅ 98 tests passing**
