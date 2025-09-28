@@ -3,12 +3,12 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const User = require('../../Models/user');
-const Publication = require('../../Models/publication');
+const Scroll = require('../../Models/scroll');
 const Follow = require('../../Models/follow');
 
 // Import routes
 const UserRouter = require('../../Routes/userR');
-const PublicationRouter = require('../../Routes/publicationR');
+const ScrollRouter = require('../../Routes/scrollR');
 const FollowRouter = require('../../Routes/followR');
 
 // Create Express app similar to main app
@@ -18,6 +18,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/net/user', UserRouter);
+app.use('/net/scroll', ScrollRouter);
+app.use('/net/follow', FollowRouter);
 app.use('/net/publication', PublicationRouter);
 app.use('/net/follow', FollowRouter);
 

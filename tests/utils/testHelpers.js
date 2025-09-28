@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jwt-simple');
 const moment = require('moment');
 const User = require('../Models/user');
-const Publication = require('../Models/publication');
+const Scroll = require('../Models/scroll');
 const Follow = require('../Models/follow');
 const { secret } = require('../Services/jwt');
 
@@ -57,37 +57,37 @@ const createTestUsers = async (count = 3, baseData = {}) => {
 };
 
 /**
- * Creates a test publication
- * @param {string} userId - User ID who owns the publication
- * @param {Object} publicationData - Publication data
- * @returns {Promise<Publication>} Created publication
+ * Creates a test scroll
+ * @param {string} userId - User ID who owns the scroll
+ * @param {Object} scrollData - Scroll data
+ * @returns {Promise<Scroll>} Created scroll
  */
-const createTestPublication = async (userId, publicationData = {}) => {
+const createTestScroll = async (userId, scrollData = {}) => {
   const defaultData = {
     user: userId,
-    text: 'Test publication text'
+    text: 'Test scroll text'
   };
 
-  const mergedData = { ...defaultData, ...publicationData };
-  const publication = new Publication(mergedData);
-  return await publication.save();
+  const mergedData = { ...defaultData, ...scrollData };
+  const scroll = new Scroll(mergedData);
+  return await scroll.save();
 };
 
 /**
- * Creates multiple test publications for a user
- * @param {string} userId - User ID who owns the publications
- * @param {number} count - Number of publications to create
- * @returns {Promise<Publication[]>} Array of created publications
+ * Creates multiple test scrolls for a user
+ * @param {string} userId - User ID who owns the scrolls
+ * @param {number} count - Number of scrolls to create
+ * @returns {Promise<Scroll[]>} Array of created scrolls
  */
-const createTestPublications = async (userId, count = 3) => {
-  const publications = [];
+const createTestScrolls = async (userId, count = 3) => {
+  const scrolls = [];
   for (let i = 1; i <= count; i++) {
-    const publicationData = {
-      text: `Test publication ${i} content`
+    const scrollData = {
+      text: `Test scroll ${i} content`
     };
-    publications.push(await createTestPublication(userId, publicationData));
+    scrolls.push(await createTestScroll(userId, scrollData));
   }
-  return publications;
+  return scrolls;
 };
 
 /**
@@ -243,8 +243,8 @@ const comparePasswords = (plainPassword, hashedPassword) => {
 module.exports = {
   createTestUser,
   createTestUsers,
-  createTestPublication,
-  createTestPublications,
+  createTestScroll,
+  createTestScrolls,
   createTestFollow,
   generateTestToken,
   generateExpiredToken,

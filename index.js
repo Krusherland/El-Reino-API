@@ -15,12 +15,12 @@ app.use(express.urlencoded({ extended: true }));
 
 const UserRouter = require("./Routes/userR");
 
-const PublicationRouter = require("./Routes/publicationR");
+const ScrollRouter = require("./Routes/scrollR");
 
 const FollowRouter = require("./Routes/followR");
 
 app.use("/net/user", UserRouter);
-app.use("/net/publication", PublicationRouter);
+app.use("/net/scroll", ScrollRouter);
 app.use("/net/follow", FollowRouter);
 
 app.get("/", (req, res) => {

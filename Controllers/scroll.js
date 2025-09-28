@@ -1,11 +1,11 @@
-const Publication = require("../Models/publication");
+const Scroll = require("../Models/scroll");
 const fs = require("fs");
 const path = require("path");
 const followService = require("../Services/followService");
 
-const pruebaPublication = (req, res) => {
+const pruebaScroll = (req, res) => {
   return res.status(200).send({
-    message: "Publication endpoint working",
+    message: "Scroll endpoint working",
   });
 };
 
@@ -13,84 +13,84 @@ const save = async (req, res) => {
   const params = req.body;
   if (!params.text) {
     return res.status(400).send({
-      message: "You must send the text of the publication",
+      message: "You must send the text of the scroll",
     });
   }
 
   try {
-    let publication = new Publication(params);
-    publication.user = req.user.id;
-    const publicationStored = await publication.save();
+    let scroll = new Scroll(params);
+    scroll.user = req.user.id;
+    const scrollStored = await scroll.save();
     
     return res.status(200).send({
       status: "success",
-      message: "Publication saved successfully",
-      publication: publicationStored,
+      message: "Scroll saved successfully",
+      scroll: scrollStored,
     });
   } catch (error) {
     return res.status(500).send({
       status: "error",
-      message: "Error saving publication",
+      message: "Error saving scroll",
     });
   }
 };
 
 const detail = async (req, res) => {
-  const publicationId = req.params.id;
+  const scrollId = req.params.id;
   
   try {
-    const publication = await Publication.findById(publicationId);
+    const scroll = await Scroll.findById(scrollId);
     
-    if (!publication) {
+    if (!scroll) {
       return res.status(404).send({
         status: "error",
-        message: "Publication not found",
+        message: "Scroll not found",
       });
     }
     
     return res.status(200).send({
       status: "success",
-      message: "Detail of publication",
-      publication,
+      message: "Detail of scroll",
+      scroll,
     });
   } catch (error) {
     return res.status(500).send({
       status: "error",
-      message: "Error fetching publication",
+      message: "Error fetching scroll",
     });
   }
 };
 
 const remove = async (req, res) => {
-  const publicationId = req.params.id;
+  const scrollId = req.params.id;
 
   try {
-    const publicationRemoved = await Publication.findOneAndDelete({ 
+    const scrollRemoved = await Scroll.findOneAndDelete({ 
       user: req.user.id, 
-      _id: publicationId 
+      _id: scrollId 
     });
     
-    if (!publicationRemoved) {
+    if (!scrollRemoved) {
       return res.status(404).send({
         status: "error",
-        message: "Publication not found or you don't have permission to delete it",
+        message: "Scroll not found or you don't have permission to delete it",
       });
     }
     
     return res.status(200).send({
       status: "success",
-      message: "Publication removed successfully",
-      publication: publicationRemoved,
+      message: "Scroll removed successfully",
+      scroll: scrollRemoved,
     });
   } catch (error) {
     return res.status(500).send({
       status: "error",
-      message: "Error deleting publication",
+      message: "Error deleting scroll",
     });
   }
 };
 
-const publications = async (req, res) => {
+const scrolls = async (req, res) => {
   const userId = req.params.id;
   let page = 1;
   let itemsPerPage = 5;
@@ -101,25 +101,25 @@ const publications = async (req, res) => {
   try {
     const skip = (page - 1) * itemsPerPage;
     
-    const publications = await Publication.find({ user: userId })
+    const scrolls = await Scroll.find({ user: userId })
       .sort("-created_at")
       .populate("user", "-password -__v -role -email")
       .skip(skip)
       .limit(itemsPerPage);
 
-    const total = await Publication.countDocuments({ user: userId });
+    const total = await Scroll.countDocuments({ user: userId });
 
-    if (!publications || publications.length === 0) {
+    if (!scrolls || scrolls.length === 0) {
       return res.status(404).send({
         status: "error",
-        message: "No publications found",
+        message: "No scrolls found",
       });
     }
 
     return res.status(200).send({
       status: "success",
-      message: "List of publications",
-      publications,
+      message: "List of scrolls",
+      scrolls,
       page,
       total,
       pages: Math.ceil(total / itemsPerPage),
@@ -128,13 +128,13 @@ const publications = async (req, res) => {
   } catch (error) {
     return res.status(500).send({
       status: "error",
-      message: "Error fetching publications",
+      message: "Error fetching scrolls",
     });
   }
 };
 
-const uploadPublication = async (req, res) => {
-  const publicationId = req.params.id;
+const uploadScroll = async (req, res) => {
+  const scrollId = req.params.id;
 
   if (!req.file) {
     return res.status(400).send({
@@ -159,22 +159,22 @@ const uploadPublication = async (req, res) => {
   }
 
   try {
-    const publicationUpdated = await Publication.findOneAndUpdate(
-      { user: req.user.id, _id: publicationId },
+    const scrollUpdated = await Scroll.findOneAndUpdate(
+      { user: req.user.id, _id: scrollId },
       { file: req.file.filename },
       { new: true }
     );
     
-    if (!publicationUpdated) {
+    if (!scrollUpdated) {
       return res.status(404).send({
         status: "error",
-        message: "Publication not found or you don't have permission to update it",
+        message: "Scroll not found or you don't have permission to update it",
       });
     }
     
     return res.status(200).send({
       status: "success",
-      publication: publicationUpdated,
+      scroll: scrollUpdated,
       file: req.file,
     });
   } catch (error) {
@@ -187,7 +187,7 @@ const uploadPublication = async (req, res) => {
 
 const media = (req, res) => {
   const file = req.params.file;
-  const pathFile = "./uploads/publications/" + file;
+  const pathFile = "./uploads/scrolls/" + file;
 
   fs.stat(pathFile, (error, exists) => {
     if (!exists) {
@@ -212,7 +212,7 @@ const feed = async (req, res) => {
     const myFeed = await followService.followUserId(req.user.id);
     const skip = (page - 1) * itemsPerPage;
 
-    const publications = await Publication.find({
+    const scrolls = await Scroll.find({
       user: { $in: myFeed.following },
     })
       .sort("-created_at")
@@ -220,22 +220,22 @@ const feed = async (req, res) => {
       .skip(skip)
       .limit(itemsPerPage);
 
-    const total = await Publication.countDocuments({
+    const total = await Scroll.countDocuments({
       user: { $in: myFeed.following },
     });
 
-    if (!publications || publications.length === 0) {
+    if (!scrolls || scrolls.length === 0) {
       return res.status(404).send({
         status: "error",
-        message: "No publications found in feed",
+        message: "No scrolls found in feed",
       });
     }
 
     return res.status(200).send({
       status: "success",
-      message: "List of publications",
+      message: "List of scrolls",
       following: myFeed.following,
-      publications,
+      scrolls,
       page,
       total,
       pages: Math.ceil(total / itemsPerPage),
@@ -249,13 +249,60 @@ const feed = async (req, res) => {
   }
 };
 
+const all = async (req, res) => {
+  let page = 1;
+  let itemsPerPage = 10;
+
+  if (req.params.page) {
+    page = parseInt(req.params.page);
+  } else if (req.query.page) {
+    page = parseInt(req.query.page);
+  }
+
+  try {
+    const skip = (page - 1) * itemsPerPage;
+
+    // Get ALL scrolls from ALL users (for Dungeons main page)
+    const scrolls = await Scroll.find({})
+      .sort("-created_at")
+      .populate("user", "-password -role -__v -email")
+      .skip(skip)
+      .limit(itemsPerPage);
+
+    const total = await Scroll.countDocuments({});
+
+    if (!scrolls || scrolls.length === 0) {
+      return res.status(404).send({
+        status: "error",
+        message: "No scrolls found",
+      });
+    }
+
+    return res.status(200).send({
+      status: "success",
+      message: "All scrolls from the kingdom",
+      scrolls,
+      page,
+      total,
+      pages: Math.ceil(total / itemsPerPage),
+      itemsPerPage: itemsPerPage,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      status: "error",
+      message: "Error fetching all scrolls",
+    });
+  }
+};
+
 module.exports = {
-  pruebaPublication,
+  pruebaScroll,
   save,
   detail,
   remove,
-  publications,
-  uploadPublication,
+  scrolls,
+  uploadScroll,
   media,
   feed,
+  all,
 };

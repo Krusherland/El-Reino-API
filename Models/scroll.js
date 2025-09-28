@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const PublicationSchema = Schema({
+const ScrollSchema = Schema({
   user: { type: Schema.ObjectId, ref: "User" },
   text: {
     type: String,
@@ -13,4 +13,4 @@ const PublicationSchema = Schema({
   },
 });
 
-module.exports = model("Publication", PublicationSchema, "publications");
+module.exports = model("Scroll", ScrollSchema, "scrolls");

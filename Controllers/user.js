@@ -5,7 +5,7 @@ const monPaginate = require("mongoose-pagination");
 const fs = require("fs");
 const path = require("path");
 const followService = require("../Services/followService");
-const Publication = require("../Models/publication");
+const Scroll = require("../Models/scroll");
 
 const pruebaUser = (req, res) => {
   return res.status(200).send({
@@ -165,13 +165,13 @@ const counter = async (req, res) => {
   try {
     const following = await Follow.count({ user: userId });
     const followers = await Follow.count({ followed: userId });
-    const publications = await Publication.count({ user: userId });
+    const scrolls = await Scroll.count({ user: userId });
 
     return res.status(200).send({
       status: "success",
       following,
       followers,
-      publications,
+      scrolls,
     });
   } catch (error) {
     return res.status(500).send({
