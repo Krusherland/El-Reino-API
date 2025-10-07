@@ -1,11 +1,11 @@
 const User = require("../Models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("../Services/jwt");
-const monPaginate = require("mongoose-pagination");
 const fs = require("fs");
 const path = require("path");
 const followService = require("../Services/followService");
 const Scroll = require("../Models/scroll");
+const Follow = require("../Models/follow");
 
 const pruebaUser = (req, res) => {
   return res.status(200).send({
@@ -163,20 +163,23 @@ const counter = async (req, res) => {
   if (req.params.id) userId = req.params.id;
 
   try {
-    const following = await Follow.count({ user: userId });
-    const followers = await Follow.count({ followed: userId });
-    const scrolls = await Scroll.count({ user: userId });
+    const following = await Follow.countDocuments({ user: userId });
+    const followed = await Follow.countDocuments({ followed: userId });
+    const publications = await Scroll.countDocuments({ user: userId });
 
     return res.status(200).send({
       status: "success",
-      following,
-      followers,
-      scrolls,
+      userId: userId,
+      following: following,
+      followed: followed,
+      publications: publications,
     });
   } catch (error) {
+    console.error("Error in counter:", error);
     return res.status(500).send({
       status: "error",
       message: "There was an unexpected error",
+      error: error.message,
     });
   }
 };

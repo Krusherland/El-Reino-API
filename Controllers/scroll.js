@@ -11,26 +11,110 @@ const pruebaScroll = (req, res) => {
 
 const save = async (req, res) => {
   const params = req.body;
-  if (!params.text) {
+  
+  if (!params.text || params.text.trim().length === 0) {
     return res.status(400).send({
-      message: "You must send the text of the scroll",
+      status: "error",
+      message: "El texto del pergamino es requerido",
+    });
+  }
+
+  if (params.text.length > 500) {
+    return res.status(400).send({
+      status: "error",
+      message: "El texto no puede exceder 500 caracteres",
     });
   }
 
   try {
-    let scroll = new Scroll(params);
-    scroll.user = req.user.id;
+    let scroll = new Scroll({
+      user: req.user.id,
+      text: params.text.trim()
+    });
+    
     const scrollStored = await scroll.save();
+    const scrollPopulated = await Scroll.findById(scrollStored._id)
+      .populate('user', '-password -role -__v -email');
     
     return res.status(200).send({
       status: "success",
-      message: "Scroll saved successfully",
-      scroll: scrollStored,
+      message: "Pergamino creado exitosamente",
+      scroll: scrollPopulated,
     });
   } catch (error) {
     return res.status(500).send({
       status: "error",
-      message: "Error saving scroll",
+      message: "Error al guardar el pergamino",
+    });
+  }
+};
+
+// New method: Upload scroll with image
+const uploadWithImage = async (req, res) => {
+  try {
+    console.log('=== Upload With Image Request ===');
+    console.log('Body:', req.body);
+    console.log('File:', req.file);
+    console.log('User:', req.user);
+
+    const { text } = req.body;
+    const userId = req.user.id;
+    const file = req.file;
+
+    // Validate text
+    if (!text || text.trim().length === 0) {
+      console.log('Validation failed: Text is required');
+      // Delete uploaded file if text validation fails
+      if (file && fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+      return res.status(400).json({
+        status: 'error',
+        message: 'El texto del pergamino es requerido'
+      });
+    }
+
+    if (text.length > 500) {
+      console.log('Validation failed: Text too long');
+      // Delete uploaded file if text validation fails
+      if (file && fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+      return res.status(400).json({
+        status: 'error',
+        message: 'El texto no puede exceder 500 caracteres'
+      });
+    }
+
+    // Create scroll with optional image
+    const newScroll = new Scroll({
+      user: userId,
+      text: text.trim(),
+      file: file ? file.filename : null
+    });
+
+    console.log('Saving scroll:', newScroll);
+    const scrollSaved = await newScroll.save();
+    const scrollPopulated = await Scroll.findById(scrollSaved._id)
+      .populate('user', '-password -role -__v -email');
+
+    console.log('Scroll saved successfully:', scrollPopulated);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Pergamino creado exitosamente',
+      scroll: scrollPopulated
+    });
+
+  } catch (error) {
+    console.error('Error in uploadWithImage:', error);
+    // Delete uploaded file if database save fails
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error al guardar el pergamino con imagen',
+      error: error.message
     });
   }
 };
@@ -65,27 +149,44 @@ const remove = async (req, res) => {
   const scrollId = req.params.id;
 
   try {
-    const scrollRemoved = await Scroll.findOneAndDelete({ 
-      user: req.user.id, 
-      _id: scrollId 
-    });
-    
-    if (!scrollRemoved) {
+    // First find the scroll to check ownership and get file info
+    const scroll = await Scroll.findById(scrollId);
+
+    if (!scroll) {
       return res.status(404).send({
         status: "error",
-        message: "Scroll not found or you don't have permission to delete it",
+        message: "Pergamino no encontrado",
       });
     }
+
+    // Check ownership
+    if (scroll.user.toString() !== req.user.id) {
+      return res.status(403).send({
+        status: "error",
+        message: "No tienes permiso para eliminar este pergamino",
+      });
+    }
+
+    // Delete image file if exists
+    if (scroll.file) {
+      const filePath = path.join(__dirname, '../uploads/scrolls/', scroll.file);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    // Delete scroll from database
+    await Scroll.findByIdAndDelete(scrollId);
     
     return res.status(200).send({
       status: "success",
-      message: "Scroll removed successfully",
-      scroll: scrollRemoved,
+      message: "Pergamino eliminado exitosamente",
+      scroll: scroll,
     });
   } catch (error) {
     return res.status(500).send({
       status: "error",
-      message: "Error deleting scroll",
+      message: "Error al eliminar el pergamino",
     });
   }
 };
@@ -186,18 +287,27 @@ const uploadScroll = async (req, res) => {
 };
 
 const media = (req, res) => {
-  const file = req.params.file;
-  const pathFile = "./uploads/scrolls/" + file;
+  try {
+    const { file } = req.params;
+    const filePath = path.join(__dirname, '../uploads/scrolls/', file);
 
-  fs.stat(pathFile, (error, exists) => {
-    if (!exists) {
-      return res.status(404).send({
-        status: "error",
-        message: "File not found",
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Imagen no encontrada'
       });
     }
-    return res.sendFile(path.resolve(pathFile));
-  });
+
+    // Send file
+    return res.sendFile(path.resolve(filePath));
+
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error al cargar la imagen'
+    });
+  }
 };
 
 const feed = async (req, res) => {
@@ -298,10 +408,11 @@ const all = async (req, res) => {
 module.exports = {
   pruebaScroll,
   save,
+  uploadWithImage,  // New method for creating scrolls with images
   detail,
   remove,
   scrolls,
-  uploadScroll,
+  uploadScroll,     // Keep old method for backward compatibility
   media,
   feed,
   all,
